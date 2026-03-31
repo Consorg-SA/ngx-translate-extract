@@ -20,3 +20,8 @@ export function extractComponentInlineTemplate(contents: string): string {
 export function stripBOM(contents: string): string {
 	return contents.trim();
 }
+
+export interface CustomTran {
+	key: string;
+	defaultValue: string;
+}

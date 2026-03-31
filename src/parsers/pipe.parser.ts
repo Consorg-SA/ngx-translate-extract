@@ -15,7 +15,7 @@ import {
 
 import { ParserInterface } from './parser.interface.js';
 import { TranslationCollection } from '../utils/translation.collection.js';
-import { isPathAngularComponent, extractComponentInlineTemplate } from '../utils/utils.js';
+import { isPathAngularComponent, extractComponentInlineTemplate, CustomTran } from '../utils/utils.js';
 
 export const TRANSLATE_PIPE_NAMES = ['translate', 'marker'];
 
@@ -29,8 +29,8 @@ export class PipeParser implements ParserInterface {
 		const nodes: TmplAstNode[] = this.parseTemplate(source, filePath);
 		const pipes: BindingPipe[] = nodes.map((node) => this.findPipesInNode(node)).flat();
 		pipes.forEach((pipe) => {
-			this.parseTranslationKeysFromPipe(pipe).forEach((key: string) => {
-				collection = collection.add(key, '', filePath);
+			this.parseTranslationKeysFromPipe(pipe).forEach((t: CustomTran) => {
+				collection = collection.add(t.key, t.defaultValue, filePath);
 			});
 		});
 		return collection;
@@ -78,17 +78,21 @@ export class PipeParser implements ParserInterface {
 		return ret;
 	}
 
-	protected parseTranslationKeysFromPipe(pipeContent: BindingPipe | LiteralPrimitive | Conditional): string[] {
-		const ret: string[] = [];
+	protected parseTranslationKeysFromPipe(pipeContent: BindingPipe | LiteralPrimitive | Conditional, pipeArgs: LiteralMap[] = []): CustomTran[] {
+		const ret: CustomTran[] = [];
 		if (pipeContent instanceof LiteralPrimitive) {
-			ret.push(pipeContent.value);
+			const defaultValue = pipeArgs.map(a => {
+				const idx = a.keys.findIndex(k => k.key === '_');
+				return idx >= 0 ? a.values[idx].value : null;
+			}).find(a => a);
+			ret.push({ key: pipeContent.value, defaultValue });
 		} else if (pipeContent instanceof Conditional) {
 			const trueExp: LiteralPrimitive | Conditional = pipeContent.trueExp as any;
 			ret.push(...this.parseTranslationKeysFromPipe(trueExp));
 			const falseExp: LiteralPrimitive | Conditional = pipeContent.falseExp as any;
 			ret.push(...this.parseTranslationKeysFromPipe(falseExp));
 		} else if (pipeContent instanceof BindingPipe) {
-			ret.push(...this.parseTranslationKeysFromPipe(pipeContent.exp as any));
+			ret.push(...this.parseTranslationKeysFromPipe(pipeContent.exp as any, pipeContent.args));
 		}
 		return ret;
 	}

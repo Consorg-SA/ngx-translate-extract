@@ -257,6 +257,34 @@ describe('PipeParser', () => {
 		expect(keys).to.deep.equal([`Hello`, `World`]);
 	});
 
+	it('should extract multiple entries from nodes with default values', () => {
+		const contents = `
+			<ion-header>
+				<ion-navbar color="brand">
+					<ion-title>{{ 'Info' | translate: {_: 'Info - default value'} }}</ion-title>
+				</ion-navbar>
+			</ion-header>
+
+			<span>{{ 'No default value' | translate: {i: 'interpolation string'} }}</span>
+
+			<ion-content>
+
+				<content-loading *ngIf="isLoading">
+					{{ 'Loading...' | translate: {someInterpolation: 'not used', _: 'Loading - default value'} }}
+				</content-loading>
+
+			</ion-content>
+		`;
+		const tEntries = Object.entries(parser.extract(contents, templateFilename)!.values);
+		expect(tEntries).to.deep.equal([['Info', 'Info - default value'], ['No default value', undefined], ['Loading...', 'Loading - default value']].map(([k, v]) => [k, { sourceFiles: [templateFilename], value: v }]));
+	});
+
+	it('should extract strings on same line', () => {
+		const contents = `<span [attr]="'Hello' | translate"></span><span [attr]="'World' | translate"></span>`;
+		const keys = parser.extract(contents, templateFilename)!.keys();
+		expect(keys).to.deep.equal(['Hello', 'World']);
+	});
+
 	it('should extract from structural directives', () => {
 		const contents = `
 		<ng-container *ngIf="'Hello' | translate as hello">{{hello}}</ng-container>

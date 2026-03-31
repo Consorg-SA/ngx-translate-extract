@@ -1,4 +1,6 @@
-import { ClassDeclaration, CallExpression, StringLiteral, SourceFile } from 'typescript';
+import { ClassDeclaration, CallExpression, StringLiteral, SourceFile, Expression } from 'typescript';
+import pkg from 'typescript';
+const { isObjectLiteralExpression, isPropertyAssignment, isIdentifier, isStringLiteralLike } = pkg;
 import { tsquery } from '@phenomnomnominal/tsquery';
 
 import { ParserInterface } from './parser.interface.js';
@@ -41,12 +43,18 @@ export class ServiceParser implements ParserInterface {
 			];
 
 			callExpressions.forEach((callExpression) => {
-				const [firstArg] = callExpression.arguments;
+				const [firstArg, secondArg] = callExpression.arguments;
 				if (!firstArg) {
 					return;
 				}
 				const strings = getStringsFromExpression(firstArg);
-				collection = collection.addKeys(strings, filePath);
+
+				if (strings.length > 1) {
+					collection = collection.addKeys(strings, filePath);
+				} else if (strings.length) {
+					const v = this.extractDefaultValueFromObjArg(secondArg);
+					collection = collection.add(strings[0], v, filePath);
+				}
 			});
 		});
 		return collection;
@@ -135,5 +143,15 @@ export class ServiceParser implements ParserInterface {
 			}
 		});
 		return allSuperClassPropertyNames;
+	}
+
+	private extractDefaultValueFromObjArg(objArg: Expression): string {
+		if (objArg && isObjectLiteralExpression(objArg)) {
+			const node = objArg.properties.find(p => isPropertyAssignment(p) && p.name && isIdentifier(p.name) && p.name.text === '_');
+			if (node && isPropertyAssignment(node) && node.initializer && isStringLiteralLike(node.initializer)) {
+				return node.initializer.text;
+			}
+		}
+		return '';
 	}
 }
