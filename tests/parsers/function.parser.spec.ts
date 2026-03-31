@@ -20,7 +20,7 @@ describe('FunctionParser', () => {
 			MK(message ? message : 'conditional operator');
 			MK('FOO.bar');
 		`;
-		const keys = parser.extract(contents, componentFilename).keys();
+		const keys = parser.extract(contents, componentFilename)?.keys();
 		expect(keys).to.deep.equal(['Hello world', 'I', 'am', 'extracted', 'binary expression', 'conditional operator', 'FOO.bar']);
 	});
 
@@ -30,7 +30,7 @@ describe('FunctionParser', () => {
 			MK('This is a ' + 'very ' + 'very ' + 'very ' + 'very ' + 'long line.');
 			MK('Mix ' + \`of \` + 'different ' + \`types\`);
 		`;
-		const keys = parser.extract(contents, componentFilename).keys();
+		const keys = parser.extract(contents, componentFilename)?.keys();
 		expect(keys).to.deep.equal(['Hello world', 'This is a very very very very long line.', 'Mix of different types']);
 	});
 
@@ -40,7 +40,7 @@ describe('FunctionParser', () => {
 			MK('This <em>is</em> a ' + 'very ' + 'very ' + 'very ' + 'very ' + 'long line.');
 			MK('Mix ' + \`of \` + 'different ' + \`types\`);
 		`;
-		const keys = parser.extract(contents, componentFilename).keys();
+		const keys = parser.extract(contents, componentFilename)?.keys();
 		expect(keys).to.deep.equal(['Hello world', 'This <em>is</em> a very very very very long line.', 'Mix of different types']);
 	});
 
@@ -54,7 +54,7 @@ describe('FunctionParser', () => {
 			}
 		}
 		`;
-		const keys = parser.extract(contents, componentFilename).keys();
+		const keys = parser.extract(contents, componentFilename)?.keys();
 		expect(keys).to.deep.equal(['DYNAMIC_TRAD.val1', 'DYNAMIC_TRAD.val2']);
 	});
 
