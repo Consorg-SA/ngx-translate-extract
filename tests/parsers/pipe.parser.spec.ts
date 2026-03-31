@@ -145,6 +145,28 @@ describe('PipeParser', () => {
 		expect(keys).to.deep.equal(['Info', 'Loading...']);
 	});
 
+	it('should extract multiple entries from nodes with default values', () => {
+		const contents = `
+			<ion-header>
+				<ion-navbar color="brand">
+					<ion-title>{{ 'Info' | translate: {_: 'Info - default value'} }}</ion-title>
+				</ion-navbar>
+			</ion-header>
+
+			<span>{{ 'No default value' | translate: {i: 'interpolation string'} }}</span>
+
+			<ion-content>
+
+				<content-loading *ngIf="isLoading">
+					{{ 'Loading...' | translate: {someInterpolation: 'not used', _: 'Loading - default value'} }}
+				</content-loading>
+
+			</ion-content>
+		`;
+		const tEntries = Object.entries(parser.extract(contents, templateFilename)!.values);
+		expect(tEntries).to.deep.equal([['Info', 'Info - default value'], ['No default value', ''], ['Loading...', 'Loading - default value']]);
+	});
+
 	it('should extract strings on same line', () => {
 		const contents = `<span [attr]="'Hello' | translate"></span><span [attr]="'World' | translate"></span>`;
 		const keys = parser.extract(contents, templateFilename)!.keys();

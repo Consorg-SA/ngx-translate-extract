@@ -43,6 +43,12 @@ describe('DirectiveParser', () => {
 		expect(keys).to.deep.equal(['KEY1']);
 	});
 
+	it('should extract keys when using literal primitive in bound attribute with default value', () => {
+		const contents = `<div [translate]="'KEY1'" [translateParams]="{_: 'default value 1'}"></div>`;
+		const tEntries = Object.entries(parser.extract(contents, templateFilename)!.values);
+		expect(tEntries).to.deep.equal([['KEY1', 'default value 1']]);
+	});
+
 	it('should extract keys when using conditional in bound attribute', () => {
 		const contents = `<div [translate]="condition ? 'KEY1' : 'KEY2'"></div>`;
 		const keys = parser.extract(contents, templateFilename)!.keys();
@@ -119,6 +125,12 @@ describe('DirectiveParser', () => {
 		const contents = '<div translate="KEY">Hello World<div>';
 		const keys = parser.extract(contents, templateFilename)!.keys();
 		expect(keys).to.deep.equal(['KEY']);
+	});
+
+	it('should extract translate attribute value if provided with default value', () => {
+		const contents = '<div translate="KEY" [translateParams]="{_: \'default value xyz\'}">Hello World<div>';
+		const tEntries = Object.entries(parser.extract(contents, templateFilename)!.values);
+		expect(tEntries).to.deep.equal([['KEY', 'default value xyz']]);
 	});
 
 	it('should not extract translate pipe in html tag', () => {

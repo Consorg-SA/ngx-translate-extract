@@ -77,6 +77,32 @@ describe('ServiceParser', () => {
 		expect(keys).to.deep.equal(['Hello World']);
 	});
 
+	it("should extract strings in TranslateService's get() method with default value", () => {
+		const contents = `
+			@Component({ })
+			export class AppComponent {
+				public constructor(protected _translateService: TranslateService) { }
+				public test() {
+					this._translateService.get('Hello World', {_: 'Hello default value'});
+				}
+		`;
+		const tEntries = Object.entries(parser.extract(contents, componentFilename)!.values);
+		expect(tEntries).to.deep.equal([['Hello World', 'Hello default value']]);
+	});
+
+	it("should extract strings in TranslateService's instant() method with default value", () => {
+		const contents = `
+			@Component({ })
+			export class AppComponent {
+				public constructor(protected _translateService: TranslateService) { }
+				public test() {
+					this._translateService.instant('Hello World', {_: 'Hello default value'});
+				}
+		`;
+		const tEntries = Object.entries(parser.extract(contents, componentFilename)!.values);
+		expect(tEntries).to.deep.equal([['Hello World', 'Hello default value']]);
+	});
+
 	it("should extract strings in TranslateService's stream() method", () => {
 		const contents = `
 			@Component({ })

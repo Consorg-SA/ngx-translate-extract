@@ -22,6 +22,7 @@ import { TranslationCollection } from '../utils/translation.collection';
 import { isPathAngularComponent, extractComponentInlineTemplate } from '../utils/utils';
 
 const TRANSLATE_ATTR_NAME = 'translate';
+const TRANSLATE_PARAMS_ATTR_NAME = 'translateParams';
 type ElementLike = Element | Template;
 
 export class DirectiveParser implements ParserInterface {
@@ -37,15 +38,23 @@ export class DirectiveParser implements ParserInterface {
 		elements.forEach((element) => {
 			const attribute = this.getAttribute(element, TRANSLATE_ATTR_NAME);
 			if (attribute?.value) {
-				collection = collection.add(attribute.value);
+				const v = this.getDefaultTranslationFromElement(element);
+				collection = collection.add(attribute.value, v);
 				return;
 			}
 
 			const boundAttribute = this.getBoundAttribute(element, TRANSLATE_ATTR_NAME);
 			if (boundAttribute?.value) {
-				this.getLiteralPrimitives(boundAttribute.value).forEach((literalPrimitive) => {
-					collection = collection.add(literalPrimitive.value);
-				});
+				const literalPrimitives = this.getLiteralPrimitives(boundAttribute.value);
+				if (literalPrimitives.length > 1) {
+					literalPrimitives.forEach((literalPrimitive) => {
+						collection = collection.add(literalPrimitive.value);
+					});
+				}
+				else if (literalPrimitives.length) {
+					const v = this.getDefaultTranslationFromElement(element);
+					collection = collection.add(literalPrimitives[0].value, v);
+				}
 				return;
 			}
 
@@ -176,5 +185,15 @@ export class DirectiveParser implements ParserInterface {
 	 */
 	protected parseTemplate(template: string, path: string): Node[] {
 		return parseTemplate(template, path).nodes;
+	}
+
+	protected getDefaultTranslationFromElement(element: ElementLike): string {
+		const translateParamsAttr = this.getBoundAttribute(element, TRANSLATE_PARAMS_ATTR_NAME);
+		if (translateParamsAttr && translateParamsAttr.value && translateParamsAttr.value instanceof ASTWithSource && translateParamsAttr.value.ast instanceof LiteralMap) {
+			const idx = translateParamsAttr.value.ast.keys.findIndex(k => k.key == '_');
+			if (idx >= 0)
+				return translateParamsAttr.value.ast.values[idx]?.value || '';
+		}
+		return '';
 	}
 }
