@@ -21,7 +21,7 @@ describe('MarkerParser', () => {
 			marker(message ? message : 'conditional operator');
 			marker('FOO.bar');
 		`;
-		const keys = parser.extract(contents, componentFilename).keys();
+		const keys = parser.extract(contents, componentFilename)!.keys();
 		expect(keys).to.deep.equal(['Hello world', 'I', 'am', 'extracted', 'binary expression', 'conditional operator', 'FOO.bar']);
 	});
 
@@ -32,7 +32,7 @@ describe('MarkerParser', () => {
 			_('This is a ' + 'very ' + 'very ' + 'very ' + 'very ' + 'long line.');
 			_('Mix ' + \`of \` + 'different ' + \`types\`);
 		`;
-		const keys = parser.extract(contents, componentFilename).keys();
+		const keys = parser.extract(contents, componentFilename)!.keys();
 		expect(keys).to.deep.equal(['Hello world', 'This is a very very very very long line.', 'Mix of different types']);
 	});
 
@@ -43,7 +43,7 @@ describe('MarkerParser', () => {
 			_('This <em>is</em> a ' + 'very ' + 'very ' + 'very ' + 'very ' + 'long line.');
 			_('Mix ' + \`of \` + 'different ' + \`types\`);
 		`;
-		const keys = parser.extract(contents, componentFilename).keys();
+		const keys = parser.extract(contents, componentFilename)!.keys();
 		expect(keys).to.deep.equal(['Hello world', 'This <em>is</em> a very very very very long line.', 'Mix of different types']);
 	});
 
@@ -58,7 +58,7 @@ describe('MarkerParser', () => {
 			}
 		}
 		`;
-		const keys = parser.extract(contents, componentFilename).keys();
+		const keys = parser.extract(contents, componentFilename)!.keys();
 		expect(keys).to.deep.equal(['DYNAMIC_TRAD.val1', 'DYNAMIC_TRAD.val2']);
 	});
 });
