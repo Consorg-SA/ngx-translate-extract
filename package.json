@@ -9,7 +9,9 @@
     "build": "rimraf ./dist && tsc",
     "watch": "rimraf ./dist && tsc --watch",
     "test": "ts-mocha -p tsconfig.spec.json tests/**/*.spec.ts",
-    "lint": "eslint ./src/**/*.ts"
+    "lint": "eslint ./src/**/*.ts",
+    "publish-to-npm": "npm publish . --access=public",
+    "test-publish-to-npm": "npm publish . --access=public --dry-run"
   },
   "dependencies": {
     "@phenomnomnominal/tsquery": "^5.0.1",
