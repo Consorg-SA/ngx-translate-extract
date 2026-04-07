@@ -16,7 +16,9 @@
     "watch": "npm run clean && tsc --watch",
     "clean": "rimraf ./dist",
     "lint": "tslint --force './src/**/*.ts'",
-    "test": "mocha -r ts-node/register tests/**/*.spec.ts"
+    "test": "mocha -r ts-node/register tests/**/*.spec.ts",
+    "publish-to-npm": "npm publish . --access=public",
+    "test-publish-to-npm": "npm publish . --access=public --dry-run"
   },
   "husky": {
     "hooks": {
