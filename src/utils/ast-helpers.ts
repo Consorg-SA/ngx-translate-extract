@@ -89,7 +89,19 @@ export function findMethodCallExpressions(node: Node, propName: string, fnName: 
 export function findClassPropertiesConstructorParameterByType(node: ClassDeclaration, type: string): string[] {
 	const query = `Constructor Parameter:has(TypeReference > Identifier[name="${type}"]):has(PublicKeyword,ProtectedKeyword,PrivateKeyword) > Identifier`;
 	const result = tsquery<Identifier>(node, query);
-	return result.map((n) => n.text);
+	if (result.length) {
+		return result.map((n) => n.text);
+	}
+
+	const constructor = tsquery<ClassDeclaration>(node, `Constructor`)[0]
+	const jsDoc = constructor && (constructor as any).jsDoc && (constructor as any).jsDoc[0];
+	if (jsDoc && jsDoc.tags) {
+		const tag = jsDoc.tags.find((t: any) => t.typeExpression?.type?.qualifier && t.typeExpression.type.qualifier.text == type);
+		if (tag?.name?.text)
+			return tag.name.text;
+	}
+
+	return null;
 }
 
 export function findClassPropertiesDeclarationByType(node: ClassDeclaration, type: string): string[] {
