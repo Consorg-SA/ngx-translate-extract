@@ -76,6 +76,15 @@ export function findClassPropertyConstructorParameterByType(node: ClassDeclarati
 	if (result) {
 		return result.text;
 	}
+
+	const constructor = tsquery<ClassDeclaration>(node, `Constructor`)[0]
+	const jsDoc = constructor && (constructor as any).jsDoc && (constructor as any).jsDoc[0];
+	if (jsDoc && jsDoc.tags) {
+		const tag = jsDoc.tags.find((t: any) => t.typeExpression?.type?.qualifier && t.typeExpression.type.qualifier.text == type);
+		if (tag?.name?.text)
+			return tag.name.text;
+	}
+
 	return null;
 }
 
