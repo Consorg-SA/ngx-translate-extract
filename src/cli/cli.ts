@@ -17,6 +17,7 @@ import { CompilerInterface } from '../compilers/compiler.interface';
 import { CompilerFactory } from '../compilers/compiler.factory';
 import { normalizePaths } from '../utils/fs-helpers';
 import { donateMessage } from '../utils/donate';
+import { RoutingParser } from '../parsers/routing.parser';
 
 // First parsing pass to be able to access pattern argument for use input/output arguments
 const y = yargs.option('patterns', {
@@ -122,7 +123,7 @@ const extractTask = new ExtractTask(cli.input, cli.output, {
 });
 
 // Parsers
-const parsers: ParserInterface[] = [new PipeParser(), new DirectiveParser(), new ServiceParser(), new MarkerParser()];
+const parsers: ParserInterface[] = [new PipeParser(), new DirectiveParser(), new ServiceParser(), new MarkerParser(), new RoutingParser()];
 extractTask.setParsers(parsers);
 
 // Post processors
