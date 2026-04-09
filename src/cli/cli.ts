@@ -18,6 +18,7 @@ import { StripPrefixPostProcessor } from '../post-processors/strip-prefix.post-p
 import { CompilerInterface } from '../compilers/compiler.interface.js';
 import { CompilerFactory } from '../compilers/compiler.factory.js';
 import { normalizePaths } from '../utils/fs-helpers.js';
+import { RoutingParser } from '../parsers/routing.parser.js';
 
 // First parsing pass to be able to access pattern argument for use input/output arguments
 const y = yargs().option('patterns', {
@@ -129,7 +130,7 @@ const extractTask = new ExtractTask(cli.input, cli.output, {
 });
 
 // Parsers
-const parsers: ParserInterface[] = [new PipeParser(), new DirectiveParser(), new ServiceParser()];
+const parsers: ParserInterface[] = [new PipeParser(), new DirectiveParser(), new ServiceParser(), new RoutingParser()];
 if (cli.marker) {
 	parsers.push(new FunctionParser(cli.marker));
 } else {

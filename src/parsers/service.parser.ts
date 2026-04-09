@@ -26,6 +26,32 @@ const TRANSLATE_SERVICE_METHOD_NAMES = ['get', 'instant', 'stream'];
 export class ServiceParser implements ParserInterface {
 	private static propertyMap = new Map<string, string[]>();
 
+	public static extractDefaultValueFromObjArg(objArg: Expression): string {
+		if (objArg && isObjectLiteralExpression(objArg)) {
+			const node = objArg.properties.find(p => isPropertyAssignment(p) && p.name && isIdentifier(p.name) && p.name.text == '_');
+			if (node && isPropertyAssignment(node) && node.initializer && isStringLiteralLike(node.initializer))
+				return node.initializer.text;
+		}
+		return '';
+	}
+
+	public static extractFromMethodCallExpressions(callExpressions: CallExpression[], collection: TranslationCollection, filePath: string): TranslationCollection {
+		callExpressions.forEach((callExpression) => {
+			const [firstArg, secondArg] = callExpression.arguments;
+			if (!firstArg) {
+				return;
+			}
+			const strings = getStringsFromExpression(firstArg);
+			if (strings.length > 1)
+				collection = collection.addKeys(strings, filePath);
+			else if (strings.length) {
+				const v = ServiceParser.extractDefaultValueFromObjArg(secondArg);
+				collection = collection.add(strings[0], v, filePath);
+			}
+		});
+		return collection;
+	}
+
 	public extract(source: string, filePath: string): TranslationCollection | null {
 		const sourceFile = tsquery.ast(source, filePath);
 
@@ -41,21 +67,7 @@ export class ServiceParser implements ParserInterface {
 				...this.findConstructorParamCallExpressions(classDeclaration),
 				...this.findPropertyCallExpressions(classDeclaration, sourceFile)
 			];
-
-			callExpressions.forEach((callExpression) => {
-				const [firstArg, secondArg] = callExpression.arguments;
-				if (!firstArg) {
-					return;
-				}
-				const strings = getStringsFromExpression(firstArg);
-
-				if (strings.length > 1) {
-					collection = collection.addKeys(strings, filePath);
-				} else if (strings.length) {
-					const v = this.extractDefaultValueFromObjArg(secondArg);
-					collection = collection.add(strings[0], v, filePath);
-				}
-			});
+			collection = ServiceParser.extractFromMethodCallExpressions(callExpressions, collection, filePath);
 		});
 		return collection;
 	}
@@ -145,13 +157,4 @@ export class ServiceParser implements ParserInterface {
 		return allSuperClassPropertyNames;
 	}
 
-	private extractDefaultValueFromObjArg(objArg: Expression): string {
-		if (objArg && isObjectLiteralExpression(objArg)) {
-			const node = objArg.properties.find(p => isPropertyAssignment(p) && p.name && isIdentifier(p.name) && p.name.text === '_');
-			if (node && isPropertyAssignment(node) && node.initializer && isStringLiteralLike(node.initializer)) {
-				return node.initializer.text;
-			}
-		}
-		return '';
-	}
 }
