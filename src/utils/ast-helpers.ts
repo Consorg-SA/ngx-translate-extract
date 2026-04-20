@@ -101,7 +101,7 @@ export function findClassPropertiesConstructorParameterByType(node: ClassDeclara
 			return tag.name.text;
 	}
 
-	return null;
+	return [];
 }
 
 export function findClassPropertiesDeclarationByType(node: ClassDeclaration, type: string): string[] {
