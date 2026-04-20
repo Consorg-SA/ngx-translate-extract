@@ -154,7 +154,7 @@ extractTask.setCompiler(compiler);
 try {
 	extractTask.execute();
 	console.log(green('\nDone.\n'));
-	console.log(donateMessage);
+	// console.log(donateMessage);
 	process.exit(0);
 } catch (e) {
 	console.log(red(`\nAn error occurred: ${e}\n`));
