@@ -1,6 +1,6 @@
 {
   "name": "@consorg/ngx-translate-extract",
-  "version": "7.0.6",
+  "version": "7.0.7",
   "description": "Extract strings from projects using ngx-translate",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
