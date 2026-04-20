@@ -4,7 +4,7 @@ import { ParserInterface } from '../../parsers/parser.interface';
 import { PostProcessorInterface } from '../../post-processors/post-processor.interface';
 import { CompilerInterface } from '../../compilers/compiler.interface';
 
-import { cyan, green, bold, dim, red } from 'colorette';
+import { cyan, green, bold, dim, red, yellow } from 'colorette';
 import * as glob from 'glob';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -41,6 +41,15 @@ export class ExtractTask implements TaskInterface {
 		this.out(bold('Extracting:'));
 		const extracted = this.extract();
 		this.out(green(`\nFound %d strings.\n`), extracted.count());
+
+		if (extracted.diff.length) {
+			this.out(bold(yellow('[WARN] Found conflicting default values:')));
+			this.out(yellow('----------'));
+			extracted.diff.forEach(e => {
+				this.out(yellow(`Multiple values for key "${e.key}"\n\texisting: "${e.v1}"\n\tnew: "${e.v2}"\n`));
+			});
+			this.out(yellow('----------\n'));
+		}
 
 		this.out(bold('Saving:'));
 
@@ -112,7 +121,7 @@ export class ExtractTask implements TaskInterface {
 				this.parsers.forEach((parser) => {
 					const extracted = parser.extract(contents, filePath);
 					if (extracted instanceof TranslationCollection) {
-						collection = collection.union(extracted);
+						collection = collection.union(extracted, true);
 					}
 				});
 			});

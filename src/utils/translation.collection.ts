@@ -2,22 +2,29 @@ export interface TranslationType {
 	[key: string]: string;
 }
 
+type CollectionDiffEntry = { key: string; v1: string; v2: string; };
+
 export class TranslationCollection {
 	public values: TranslationType = {};
+	public diff: CollectionDiffEntry[] = [];
 
-	public constructor(values: TranslationType = {}) {
+	public constructor(values: TranslationType = {}, diff: CollectionDiffEntry[] = []) {
 		this.values = values;
+		this.diff = diff;
 	}
 
 	public add(key: string, val: string = ''): TranslationCollection {
-		return new TranslationCollection({ ...this.values, [key]: val });
+		const existing = this.values[key];
+		if (existing && val != existing)
+			this.diff.push({ key, v1: existing, v2: val });
+		return new TranslationCollection({ ...this.values, [key]: val }, this.diff);
 	}
 
 	public addKeys(keys: string[]): TranslationCollection {
 		const values = keys.reduce((results, key) => {
 			return { ...results, [key]: '' };
 		}, {} as TranslationType);
-		return new TranslationCollection({ ...this.values, ...values });
+		return new TranslationCollection({ ...this.values, ...values }, this.diff);
 	}
 
 	public remove(key: string): TranslationCollection {
@@ -36,7 +43,7 @@ export class TranslationCollection {
 				values[key] = val;
 			}
 		});
-		return new TranslationCollection(values);
+		return new TranslationCollection(values, this.diff);
 	}
 
 	public map(callback: (key?: string, val?: string) => string): TranslationCollection {
@@ -44,20 +51,26 @@ export class TranslationCollection {
 		this.forEach((key, val) => {
 			values[key] = callback.call(this, key, val);
 		});
-		return new TranslationCollection(values);
+		return new TranslationCollection(values, this.diff);
 	}
 
-	public union(collection: TranslationCollection): TranslationCollection {
-		return new TranslationCollection({ ...this.values, ...collection.values });
+	public union(collection: TranslationCollection, detectDiff = false): TranslationCollection {
+		if (detectDiff)
+			this.saveDuplicateKeysWithDifferentValues(collection);
+
+		return new TranslationCollection({ ...this.values, ...collection.values }, [ ...this.diff, ...collection.diff ]);
 	}
 
-	public intersect(collection: TranslationCollection): TranslationCollection {
+	public intersect(collection: TranslationCollection, detectDiff = false): TranslationCollection {
+		if (detectDiff)
+			this.saveDuplicateKeysWithDifferentValues(collection);
+
 		const values: TranslationType = {};
 		this.filter((key) => collection.has(key)).forEach((key, val) => {
 			values[key] = val;
 		});
 
-		return new TranslationCollection(values);
+		return new TranslationCollection(values, [ ...this.diff, ...collection.diff ]);
 	}
 
 	public has(key: string): boolean {
@@ -88,6 +101,21 @@ export class TranslationCollection {
 				values[key] = this.get(key);
 			});
 
-		return new TranslationCollection(values);
+		return new TranslationCollection(values, this.diff);
+	}
+
+	private saveDuplicateKeysWithDifferentValues(collection: TranslationCollection) {
+		this.diff.push(...this.findDuplicateKeysWithDifferentValues(this.values, collection.values));
+	}
+
+	private findDuplicateKeysWithDifferentValues(a: any, b: any): CollectionDiffEntry[] {
+		const result: CollectionDiffEntry[] = [];
+		if (a == null || b == null)
+			return result;
+		for (const key in a)
+			if (b.hasOwnProperty(key))
+				if (a[key] !== b[key])
+					result.push({ key, v1: a[key], v2: b[key] });
+		return result;
 	}
 }
