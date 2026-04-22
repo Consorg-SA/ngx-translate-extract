@@ -3,6 +3,9 @@ import { tsquery } from '@phenomnomnominal/tsquery';
 import { ParserInterface } from './parser.interface.js';
 import { TranslationCollection } from '../utils/translation.collection.js';
 import { getNamedImportAlias, findFunctionCallExpressions, getStringsFromExpression } from '../utils/ast-helpers.js';
+import pkg from 'typescript';
+const { isCallExpression } = pkg;
+import { ServiceParser } from './service.parser.js';
 
 const MARKER_MODULE_NAME = 'ngx-translate-extract-marker';
 const MARKER_IMPORT_NAME = 'marker';
@@ -25,7 +28,16 @@ export class MarkerParser implements ParserInterface {
 				return;
 			}
 			const strings = getStringsFromExpression(firstArg);
-			collection = collection.addKeys(strings, filePath);
+			if (strings.length > 1)
+				collection = collection.addKeys(strings, filePath);
+			else if (strings.length) {
+				if (isCallExpression(callExpression.parent) && callExpression.parent.arguments.length >= 2) {
+					const v = ServiceParser.extractDefaultValueFromObjArg(callExpression.parent.arguments[1]);
+					collection = collection.add(strings[0], v, filePath);
+				} else {
+					collection = collection.add(strings[0], '', filePath);
+				}
+			}
 		});
 		return collection;
 	}
