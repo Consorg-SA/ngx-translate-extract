@@ -70,7 +70,12 @@ export class ServiceParser implements ParserInterface {
 			return [];
 		}
 		const paramName = findMethodParameterByType(constructorDeclaration, TRANSLATE_SERVICE_TYPE_REFERENCE);
-		return findMethodCallExpressions(constructorDeclaration, paramName, TRANSLATE_SERVICE_METHOD_NAMES);
+		return findMethodCallExpressions(constructorDeclaration, paramName, TRANSLATE_SERVICE_METHOD_NAMES)
+			.concat(classDeclaration.heritageClauses?.some(c => c.token == 93 /*ExtendsKeyword*/)
+				? findPropertyCallExpressions(classDeclaration, paramName, TRANSLATE_SERVICE_METHOD_NAMES)
+				: []
+			)
+		;
 	}
 
 	protected findPropertyCallExpressions(classDeclaration: ClassDeclaration): CallExpression[] {
