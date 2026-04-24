@@ -1,6 +1,6 @@
 import { ClassDeclaration, CallExpression, StringLiteral, SourceFile, Expression } from 'typescript';
 import pkg from 'typescript';
-const { isObjectLiteralExpression, isPropertyAssignment, isIdentifier, isStringLiteralLike } = pkg;
+const { isObjectLiteralExpression, isPropertyAssignment, isIdentifier, isStringLiteralLike, SyntaxKind } = pkg;
 import { tsquery } from '@phenomnomnominal/tsquery';
 
 import { ParserInterface } from './parser.interface.js';
@@ -78,7 +78,12 @@ export class ServiceParser implements ParserInterface {
 			return [];
 		}
 		const paramName = findMethodParameterByType(constructorDeclaration, TRANSLATE_SERVICE_TYPE_REFERENCE);
-		return findMethodCallExpressions(constructorDeclaration, paramName, TRANSLATE_SERVICE_METHOD_NAMES);
+		return findMethodCallExpressions(constructorDeclaration, paramName, TRANSLATE_SERVICE_METHOD_NAMES)
+			.concat(classDeclaration.heritageClauses?.some(c => c.token == SyntaxKind.ExtendsKeyword)
+				? findPropertyCallExpressions(classDeclaration, paramName, TRANSLATE_SERVICE_METHOD_NAMES)
+				: []
+			)
+		;
 	}
 
 	protected findPropertyCallExpressions(classDeclaration: ClassDeclaration, sourceFile: SourceFile): CallExpression[] {
