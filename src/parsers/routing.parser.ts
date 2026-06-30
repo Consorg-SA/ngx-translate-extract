@@ -1,9 +1,11 @@
-import { tsquery } from "@phenomnomnominal/tsquery";
-import { CallExpression, ScriptKind, StringLiteral } from "typescript";
-import { findMethodCallExpressions } from "../utils/ast-helpers";
-import { TranslationCollection } from "../utils/translation.collection";
-import { ParserInterface } from "./parser.interface";
-import { ServiceParser } from "./service.parser";
+import { tsquery } from '@phenomnomnominal/tsquery';
+import { CallExpression, StringLiteral } from 'typescript';
+import pkg from 'typescript';
+const { ScriptKind } = pkg;
+import { findMethodCallExpressions } from '../utils/ast-helpers.js';
+import { TranslationCollection } from '../utils/translation.collection.js';
+import { ParserInterface } from './parser.interface.js';
+import { ServiceParser } from './service.parser.js';
 
 const TRANSLATE_SERVICE_VARIABLE_NAME = 'translate';
 const TRANSLATE_SERVICE_METHOD_NAMES = ['get', 'instant', 'stream'];

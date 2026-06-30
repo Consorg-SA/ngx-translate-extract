@@ -122,14 +122,14 @@ export class TranslationCollection {
 		this.diff.push(...this.findDuplicateKeysWithDifferentValues(this.values, collection.values));
 	}
 
-	private findDuplicateKeysWithDifferentValues(a: any, b: any): CollectionDiffEntry[] {
+	private findDuplicateKeysWithDifferentValues(a: TranslationType, b: TranslationType): CollectionDiffEntry[] {
 		const result: CollectionDiffEntry[] = [];
 		if (a == null || b == null)
 			return result;
 		for (const key in a)
 			if (b.hasOwnProperty(key))
-				if (a[key] !== b[key])
-					result.push({ key, v1: a[key], v2: b[key] });
+				if (a[key].value !== b[key].value)
+					result.push({ key, v1: a[key].value, v2: b[key].value });
 		return result;
 	}
 
