@@ -54,6 +54,11 @@ export const cli: any = y // temporary any
 		required: true
 	})
 	.coerce('output', (output: string[]) => normalizePaths(output, parsed.patterns))
+	.option('ignore', {
+		describe: 'A glob pattern or an array of glob patterns to exclude matches. Note: ignore patterns are always in dot:true mode (that makes glob treat dots as normal characters), regardless of any other settings.',
+		type: 'array',
+		normalize: true
+	})
 	.option('format', {
 		alias: 'f',
 		describe: 'Format',
@@ -126,7 +131,8 @@ export const cli: any = y // temporary any
 	.parse(process.argv);
 
 const extractTask = new ExtractTask(cli.input, cli.output, {
-	replace: cli.replace
+	replace: cli.replace,
+	ignore: cli.ignore
 });
 
 // Parsers

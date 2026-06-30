@@ -13,6 +13,7 @@ const { sync } = pkg;
 
 export interface ExtractTaskOptionsInterface {
 	replace?: boolean;
+	ignore?: string[];
 }
 
 export class ExtractTask implements TaskInterface {
@@ -158,7 +159,7 @@ export class ExtractTask implements TaskInterface {
 	 * Get all files matching pattern
 	 */
 	protected getFiles(pattern: string): string[] {
-		return sync(pattern).filter((filePath) => fs.statSync(filePath).isFile());
+		return sync(pattern, { ignore: this.options?.ignore }).filter((filePath) => fs.statSync(filePath).isFile());
 	}
 
 	protected out(...args: any[]): void {
